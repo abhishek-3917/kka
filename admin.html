@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Kirana Store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-6 bg-gray-50 text-gray-900">
+  <h1 class="text-3xl font-bold mb-6">Admin Panel</h1>
+
+  <!-- Add Product Form -->
+  <div class="mb-6 bg-white p-4 rounded shadow">
+    <h2 class="text-xl font-semibold mb-2">Add New Product</h2>
+    <div class="grid grid-cols-2 gap-4">
+      <input id="name" placeholder="Product Name" class="border p-2 rounded" />
+      <input id="price" type="number" placeholder="Price" class="border p-2 rounded" />
+      <input id="unit" placeholder="Unit (e.g. kg, L)" class="border p-2 rounded" />
+      <input id="category" placeholder="Category" class="border p-2 rounded" />
+      <input id="availableUnits" placeholder="Available Units (comma-separated)" class="col-span-2 border p-2 rounded" />
+      <button onclick="addProduct()" class="bg-green-600 text-white px-4 py-2 rounded">Add Product</button>
+    </div>
+  </div>
+
+  <!-- Product List -->
+  <div class="bg-white p-4 rounded shadow">
+    <h2 class="text-xl font-semibold mb-4">Current Products</h2>
+    <ul id="productList" class="space-y-2"></ul>
+  </div>
+
+  <script>
+    let products = [];
+
+    function loadProducts() {
+      const stored = localStorage.getItem('products');
+      products = stored ? JSON.parse(stored) : [];
+      renderProducts();
+    }
+
+    function saveProducts() {
+      localStorage.setItem('products', JSON.stringify(products));
+    }
+
+    function addProduct() {
+      const name = document.getElementById('name').value;
+      const price = parseFloat(document.getElementById('price').value);
+      const unit = document.getElementById('unit').value;
+      const category = document.getElementById('category').value;
+      const availableUnits = document.getElementById('availableUnits').value.split(',').map(u => u.trim());
+
+      if (!name || isNaN(price) || !unit || !category || availableUnits.length === 0) {
+        alert("Fill all fields correctly");
+        return;
+      }
+
+      const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+
+      products.push({
+        id: newId,
+        name,
+        price,
+        unit,
+        category,
+        availableUnits,
+        inStock: true
+      });
+
+      saveProducts();
+      renderProducts();
+    }
+
+    function deleteProduct(id) {
+      products = products.filter(p => p.id !== id);
+      saveProducts();
+      renderProducts();
+    }
+
+    function renderProducts() {
+      const list = document.getElementById('productList');
+      list.innerHTML = products.map(p => `
+        <li class="flex justify-between items-center border p-2 rounded">
+          <span>${p.name} - ₹${p.price}/${p.unit}</span>
+          <button onclick="deleteProduct(${p.id})" class="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+        </li>
+      `).join('');
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
